@@ -1,0 +1,27 @@
+---
+- debug:
+    msg:
+      "mongodb_replSet_master: {{mongodb_replSet_master}}, 
+      ansible_all_ipv4_addresses: {{ansible_all_ipv4_addresses}}, 
+      isMaster: {{ True if mongodb_replSet_master in ansible_all_ipv4_addresses else False }}"
+    verbosity: 2
+
+- name: determine if is replica set master
+  set_fact:
+    mongodb_replSet_isMaster: "{{ True if mongodb_replSet_master in ansible_all_ipv4_addresses else False }}"
+
+- block:
+  
+  - name: install docker
+    include: install.docker.yml
+
+  - name: install MongoDB (Debian/Ubuntu)
+    include: install.deb.yml
+    
+  - name: common installation steps
+    include: install.common.yml
+
+- name: configure MongoDB replication
+  include: replica.yml
+  when: mongodb_replSet_enabled
+  tags: mongodb_replica
